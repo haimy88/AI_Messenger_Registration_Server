@@ -32,6 +32,11 @@ def register():
 
     return jsonify({"message": "User registered successfully!", "user_id": str(result.inserted_id)}), 201
 
+@app.route('/test', methods=['GET'])
+def test():
+    
+    return jsonify({"message" : "tested successfully"})
+
 @app.route('/users', methods=['GET'])
 def get_users():
     users = []
