@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from dotenv import load_dotenv
 import os
+import bcrypt
 
 load_dotenv()
 
@@ -23,18 +24,22 @@ def register():
     username = data.get('username')
     password = data.get('password')
 
+    # Check if the username already exists
     existing_user = registration_collection.find_one({"username": username})
     if existing_user:
         return jsonify({"message": "Username already exists!"}), 400
 
-    new_user = {"username": username, "password": password}  # Note: Hash the password in a real app
+    # Hash the password before storing
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    # Insert new user into MongoDB
+    new_user = {"username": username, "password": hashed_password}
     result = registration_collection.insert_one(new_user)
 
     return jsonify({"message": "User registered successfully!", "user_id": str(result.inserted_id)}), 201
 
 @app.route('/test', methods=['GET'])
 def test():
-    
     return jsonify({"message" : "tested successfully"})
 
 @app.route('/users', methods=['GET'])
