@@ -2,12 +2,15 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson import ObjectId
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 import bcrypt
 
 load_dotenv()
 
 app = Flask(__name__)
+
+CORS(app)
 
 mongo_uri = os.getenv("MONGO_URI")
 
@@ -17,22 +20,18 @@ registration_collection = db['registration']
 
 @app.route('/register', methods=['POST'])
 def register():
-    print("received")
     
     data = request.get_json()
 
     username = data.get('username')
     password = data.get('password')
 
-    # Check if the username already exists
     existing_user = registration_collection.find_one({"username": username})
     if existing_user:
         return jsonify({"message": "Username already exists!"}), 400
 
-    # Hash the password before storing
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-    # Insert new user into MongoDB
     new_user = {"username": username, "password": hashed_password}
     result = registration_collection.insert_one(new_user)
 
